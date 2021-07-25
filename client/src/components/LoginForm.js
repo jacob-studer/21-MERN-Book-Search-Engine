@@ -31,15 +31,13 @@ const LoginForm = () => {
 
     try {
       //apollo client use mutation hook
-      const response = await loginUser(userFormData);
+      const { data } = await loginUser({
+        variables: { ...userFormData }
+      })
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+      console.log(data)
 
-      const { token, user } = await response.json();
-      console.log(user);
-      Auth.login(token);
+      Auth.login(data.login.token);
     } catch (err) {
       console.error(err);
       setShowAlert(true);

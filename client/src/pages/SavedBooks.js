@@ -8,13 +8,11 @@ import { removeBookId } from '../utils/localStorage';
 import { useMutation, useQuery } from '@apollo/client';
 
 const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
 
   // use this to determine if `useEffect()` hook needs to run again
-  const userDataLength = Object.keys(userData).length;
   
   const { loading, data } = useQuery(GET_ME);
-  const getUser = data?.user || [];
+  const userData = data?.user || [];
 
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
 
@@ -29,14 +27,10 @@ const SavedBooks = () => {
     
 
     try {
-      const response = await removeBook(bookId, token);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
+      const { data } = await removeBook({
+        variables: { bookId }
+      })
+      
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
@@ -45,7 +39,7 @@ const SavedBooks = () => {
   };
 
   // if data isn't here yet, say so
-  if (!userDataLength) {
+  if (loading) {
     return <h2>LOADING...</h2>;
   }
 
@@ -58,7 +52,7 @@ const SavedBooks = () => {
       </Jumbotron>
       <Container>
         <h2>
-          {userData.savedBooks.length
+          {userData.savedBooks?.length
             ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
